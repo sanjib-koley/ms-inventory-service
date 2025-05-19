@@ -30,6 +30,7 @@ public class InventoryController {
 		if (tokenService.validateToken(token) && "seller".equalsIgnoreCase(usertype)) {
 			inventory.setProductId(productId);
 			Inventory inventoryCreated = inventoryService.addProductToInventory(token,usertype, inventory);
+			tokenService.addProductQuantity(token, usertype, productId, inventory.getQuantity());
 			return new ResponseEntity<Inventory>(inventoryCreated, HttpStatus.CREATED);
 		} else {
 			return ResponseEntity.status(401).body("Invalid Details");

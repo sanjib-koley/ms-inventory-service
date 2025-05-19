@@ -109,5 +109,26 @@ public class AppConfig
                 .filter(new LoggingWebClientFilter())
                 .build();
     }
+    
+    @Bean
+    @Scope(value = "prototype")
+    WebClient addProductQuantityEureka(WebClient.Builder webClientBuilder)
+    {
+        List<ServiceInstance>  instances =   discoveryClient.getInstances("catalog-service");
+
+        if(instances.isEmpty())
+        {
+            throw new RuntimeException("No instances found for catalog-service");
+        }
+
+        // Assuming you want to use the first instance and can be replaced by a load balancing strategy
+        String hostname = instances.get(0).getHost();
+        String port = String.valueOf(instances.get(0).getPort());
+
+        return webClientBuilder
+                .baseUrl(String.format("http://%s:%s/api/v1/add/quantity/", hostname, port))
+                .filter(new LoggingWebClientFilter())
+                .build();
+    }
 
 }
