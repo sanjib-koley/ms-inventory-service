@@ -111,6 +111,29 @@ public class TokenService
         }
         return  quantityNew;
     }
+    
+    
+    public Integer reduceProductQuantity(String token,String usertype,Integer productId,Integer quantity)
+    {
+    	
+        WebClient productFetchNameWebClient = ctx.getBean("reduceProductQuantityEureka", WebClient.class);
+
+        Integer quantityNew = null;
+        quantityNew =productFetchNameWebClient.put()
+        		.uri("/{id}/{quantity}", productId,quantity)
+                .header("Authorization", token)
+                .header("Usertype", usertype)
+                .retrieve()
+                .bodyToMono(Integer.class)
+                .block(); // Thread is Blocked until the response is received
+
+        log.info("Quantity  from product-service: {}", quantityNew);
+
+        if(quantityNew == null) {
+        	throw new RuntimeException("Product Qauntity not reduced for product Id:::"+productId);
+        }
+        return  quantityNew;
+    }
 
 
 

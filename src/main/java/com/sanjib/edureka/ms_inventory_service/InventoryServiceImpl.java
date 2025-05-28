@@ -14,16 +14,42 @@ public class InventoryServiceImpl implements InventoryService {
     TokenService tokenService;
 
 	@Override
-	public Inventory addProductToInventory(String token, String usertype, Inventory inventory) {
-		
-		Long sellerId = tokenService.getUserIdFromToken(token);
-		inventory.setSellerId(sellerId);
-		
-		String productName = tokenService.getProductNameFromId(token,usertype,inventory.getProductId());
-		inventory.setProductName(productName);
-		
-		inventoryReository.save(inventory);
+	public Inventory addProductToInventory(String token, String usertype, Integer productId, Inventory inventoryView) {
 
-		return inventory;
+		Inventory iDb = inventoryReository.findByProductId(productId);
+
+		if (iDb == null) {
+			iDb = new Inventory();
+			iDb.setQuantity(inventoryView.getQuantity());
+			iDb.setAddress(inventoryView.getAddress());
+		} else {
+			iDb.setQuantity(iDb.getQuantity() + inventoryView.getQuantity());
+		}
+
+		iDb.setProductId(productId);
+		Long sellerId = tokenService.getUserIdFromToken(token);
+		iDb.setSellerId(sellerId);
+
+		String productName = tokenService.getProductNameFromId(token, usertype, productId);
+		iDb.setProductName(productName);
+
+		inventoryReository.save(iDb);
+
+		return iDb;
 	}
+
+	@Override
+	public Inventory reduceQuantityInventory(String token, String usertype, Integer productId,Integer quantity) {
+		
+		Inventory inventory = inventoryReository.findByProductId(productId);
+		inventory.setQuantity(inventory.getQuantity()-quantity);
+		inventoryReository.save(inventory);
+		return inventory;
+		
+	}
+	
+	public Inventory getInventoryByProductId(Integer productId) {
+		return inventoryReository.findByProductId(productId);
+	}
+	
 }
